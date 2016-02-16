@@ -8,11 +8,6 @@ class Card:
         return "{}".format(self.rank).ljust(2) + self.suit
 
 
-def __what__():
-    return open('poker_help.text', 'r+')
-
-
-
 
 
 def getDeck():
@@ -54,7 +49,7 @@ hands = []
 #Get a deck, clear the table
 
 for x in range(0,5):
-    hand = drawHand(2,deck)            #draw a hand from deck
+    hand = drawHand(2,deck) #draw a hand from deck
     hands.append(hand)
     deck = removeFromDeck(hand, deck)  #update deck by removing drawn cards
 
