@@ -1,4 +1,6 @@
 import random
+import string
+
 '''
     Init a new poker obj to setup the game
     call playSimpleGame to see an example run.
@@ -18,6 +20,7 @@ import random
 
 
 '''
+
 class Card:
     def __init__(self, suit, rank): 
         self.suit = suit
@@ -52,10 +55,64 @@ class Deck:
             self.cards.remove(card_drawn)
         return hand
 
+class Player:
+    def __init__(self, name, starting_stack):
+        self.name = name
+        self.starting_stack = starting_stack
+
+    def giveHand(self, hand):
+        self.hand = hand
+
 class Poker:
     def __init__(self, num_players, starting_stack):
         self.num_players = num_players;
-        self.starting_stack = starting_stack;
+        self.players = []
+        for x in range(0,num_players):
+            name = 'Player ' + string.uppercase[x]
+            player = Player(name, starting_stack)
+            self.players.append(player)
+
+    def determinWinner(self, players, river):
+        
+
+        def getAllHands(cards):
+
+            '''
+                def getAllHands(cards):
+
+                    12345
+                    23456
+                    34567
+                    
+                def getHighestHand:
+
+                go through each hand,
+                    check if 5 of the 7 cards can form a hand
+                        assign that rank to the hand
+                go through each hand
+                    assign first to winners
+                    check for hand rank that beats winners
+                        replace
+                    check hand matches winners
+                        add to winners
+            '''
+            pass
+            #TODO
+        pass
+
+
+    def playBots(self,num_bots):
+        deck = Deck()
+        hands = []
+
+
+    def printHands(self):
+        for x in range(0,len(self.players)):
+            player = self.players[x]
+            print "Printing hand for " + player.name
+            for card in player.hand:
+                print(card)
+
 
     def playSampleGame(self):
         '''
@@ -65,57 +122,50 @@ class Poker:
         deck = Deck()
         hands = []
 
-        # Draw x hands
-        for x in range(0,self.num_players):
+        # Draw x hands, assign to all players of class Poker
+        for x in range(0,len(self.players)):
+            player = self.players[x]
             hand = deck.drawHand(2)
-            hands.append(hand)
+            self.players[x].hand = hand
 
-        # print hand values. Insert any templating in this area
-        for hand in hands:
-            print "\nPrinting hand for player\n"
-            for card in hand:
-                print(card)
 
-        # flop up to 5 cards
+        for x in range(0,len(self.players)):
+            player = self.players[x]
+            inp = raw_input('Reveal' + player.name + "'s hand? [yn] ");
+            if inp in ['y', 'Y']:
+                print "Printing hand for " + player.name
+                for card in player.hand:
+                    print(card)
+
+
+        # Flop then flip no more then 2 additional cards
         for i in range(0,3):
-
             if i==0:
                 river = deck.drawHand(3)
-
             else:
-
-                inp = raw_input('Would you like to flop another card? Hit Enter to continue, or hit any other key to stop')
-                if inp in [None]:
+                inp = raw_input('Show another card? Hit Enter to continue, or hit any other key to stop ')
+                if inp in [None, '']:
                     river = river + deck.drawHand(1)
-
                 else:
                     print "flip the cards"
                     break
-
-            print "\nPrinting river\n"
+            print "=========== Printing river ========== "
             for card in river:
                 print(card)
 
-        inp = raw_input("dev_opts? [yn]")
+        inp = raw_input('Show all hands? [yn]')
+        if inp in ['y', 'Y']:
+            self.printHands();
 
+        inp = raw_input("dev_opts? [yn]")
         if inp in [None,'y']:
                 inp = raw_input('Would you like to show deck? [yn]')
                 if inp in [None,'y']:
-                    print "\nPrinting updated deck\n"
+                    print "Printing updated deck\n"
                     for card in deck.cards:
                         print(card)
 
 
-
-game = Poker(5,500)
+num_players = int(raw_input('How many players would you like to play? '));
+game = Poker(num_players,500)
 game.playSampleGame()
-
-
-    
-
-
-    
-
-
-
-
