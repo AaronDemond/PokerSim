@@ -1,26 +1,6 @@
 import random
 import string
 
-'''
-    Init a new poker obj to setup the game
-    call playSimpleGame to see an example run.
-
-    ex:
-
-        import poker.py
-        my_game = Poker(5,500) // Start a 5 person game, at $500 ea
-        my_game.playSimpleGame()
-
-        then run the above in the python shell
-
-    more to come. For now it will interactively play a game of poker,
-    with the exception being that it WILL show ALL hands. No UI has 
-    been built on top, and this software is intended to be used for
-    teating various game conditions and outcomes. 
-
-
-'''
-
 class Card:
     def __init__(self, suit, rank): 
         self.suit = suit
@@ -28,6 +8,22 @@ class Card:
 
     def __str__(self):
         return "{}".format(self.rank).ljust(2) + self.suit
+
+
+    def getValue(self):
+        '''
+            Return a dict of possible numerical values of the card. Dict used
+            because ace can cake high or low (1,14) 
+        '''
+        if self.rank in ['2','3','4','5','6','7','8','9','10']:
+            return [int(self.rank)]
+        else:
+            if self.rank == 'A': return [1,14]
+            elif self.rank == 'J': return [11]
+            elif self.rank == 'Q': return [12]
+            elif self.rank == 'K': return [13]
+
+        
 
 class Deck:
     def __init__(self):
@@ -45,7 +41,8 @@ class Deck:
 
     def drawHand(self, ammount):
         '''
-        Draws a players hand and updates deck
+            Returns a list (hand) of two cards and updates deck
+            by removing the cards from it
         '''
         hand = []
         for i in range(0,ammount):
@@ -60,59 +57,59 @@ class Player:
         self.name = name
         self.starting_stack = starting_stack
 
-    def giveHand(self, hand):
-        self.hand = hand
-
 class Poker:
+
     def __init__(self, num_players, starting_stack):
+        '''
+            Setup a game, init must be called before other methods.
+        '''
         self.num_players = num_players;
         self.players = []
+
+        # Create a unique player, assign their starting cash and append to game
         for x in range(0,num_players):
             name = 'Player ' + string.uppercase[x]
             player = Player(name, starting_stack)
             self.players.append(player)
 
-    def determinWinner(self, players, river):
-        
 
-        def getAllHands(cards):
-
-            '''
-                def getAllHands(cards):
-
-                    12345
-                    23456
-                    34567
-                    
-                def getHighestHand:
-
-                go through each hand,
-                    check if 5 of the 7 cards can form a hand
-                        assign that rank to the hand
-                go through each hand
-                    assign first to winners
-                    check for hand rank that beats winners
-                        replace
-                    check hand matches winners
-                        add to winners
-            '''
-            pass
-            #TODO
+    def determinWinner(self, river):
+        '''
+            todo.
+            for now, river is passed as an argument but eventually it should be built 
+            into the poker class.
+        '''
         pass
 
 
-    def playBots(self,num_bots):
-        deck = Deck()
-        hands = []
+    def getHighestCard(self):
+        '''
+            Returns a dict containing the highest valued cards
+        '''
+        cur_max = None
+        cur_max_cards = []
+        for player in self.players:
+            for card in player.hand:
+                for v in card.getValue(): #Cards can have multiple values (Only ace, but it is coded to always return a dict)
+                    if v == cur_max:
+                        cur_max_cards.append(card)
+                    elif v > cur_max:
+                        cur_max = v
+                        cur_max_cards = [card]
+
+        return cur_max_cards
+                    
 
 
     def printHands(self):
+        '''
+            Can be called at any time to print players hands
+        '''
         for x in range(0,len(self.players)):
             player = self.players[x]
             print "Printing hand for " + player.name
             for card in player.hand:
                 print(card)
-
 
     def playSampleGame(self):
         '''
@@ -123,47 +120,61 @@ class Poker:
         hands = []
 
         # Draw x hands, assign to all players of class Poker
-        for x in range(0,len(self.players)):
-            player = self.players[x]
+        for player in self.players:
             hand = deck.drawHand(2)
             self.players[x].hand = hand
 
 
-        for x in range(0,len(self.players)):
-            player = self.players[x]
+        # Optionally reveal each hand (todo: combine with above)
+        for player in self.players:
             inp = raw_input('Reveal' + player.name + "'s hand? [yn] ");
             if inp in ['y', 'Y']:
                 print "Printing hand for " + player.name
                 for card in player.hand:
                     print(card)
 
+        # Optionally show all hands and the highest card dealt
+        inp = raw_input('Show all hands and highest valued card? [yn]');
+        if inp in ['y', 'Y']:
+            self.printHands();
+            highest_cards = self.getHighestCard()
+            print "Printing Highest cards:"
+            for hc in highest_cards:
+                print(hc)
 
-        # Flop then flip no more then 2 additional cards
-        for i in range(0,3):
-            if i==0:
-                river = deck.drawHand(3)
-            else:
-                inp = raw_input('Show another card? Hit Enter to continue, or hit any other key to stop ')
-                if inp in [None, '']:
-                    river = river + deck.drawHand(1)
+        # Interactive dealer
+        inp = raw_input('Dealer ready. Flop river? [yn]');
+        if inp in ['y', 'Y']:
+            # Flop then flip no more then 2 additional cards
+            for i in range(0,3):
+                if i==0:
+                    self.river = deck.drawHand(3)
                 else:
-                    print "flip the cards"
-                    break
-            print "=========== Printing river ========== "
-            for card in river:
-                print(card)
+                    inp = raw_input('Show another card? [yn]')   # If the round ends, this loop breaks and it continues below.
+                    if inp in ['y', 'Y']:
+                        self.river = self.river + deck.drawHand(1)
+                    else:
+                        print "Round over"
+                        break
+                print "=========== Printing river ========== "
+                for card in self.river:
+                    print(card)
+
+        # The game is now over. Show options
 
         inp = raw_input('Show all hands? [yn]')
         if inp in ['y', 'Y']:
             self.printHands();
 
-        inp = raw_input("dev_opts? [yn]")
+        inp = raw_input("Options? [yn]")
         if inp in [None,'y']:
                 inp = raw_input('Would you like to show deck? [yn]')
                 if inp in [None,'y']:
                     print "Printing updated deck\n"
                     for card in deck.cards:
                         print(card)
+
+
 
 
 num_players = int(raw_input('How many players would you like to play? '));
