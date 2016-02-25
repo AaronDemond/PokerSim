@@ -1,5 +1,6 @@
 import random
 import string
+import itertools
 
 class Card:
     def __init__(self, suit, rank): 
@@ -73,13 +74,25 @@ class Poker:
             self.players.append(player)
 
 
-    def determinWinner(self, river):
-        '''
-            todo.
-            for now, river is passed as an argument but eventually it should be built 
-            into the poker class.
-        '''
-        pass
+    def getBestHand(self):
+
+        curr_best = 11 #1 = Royal Flush - 10 = High card. 11 means nothing.
+        for player in self.players:
+            card_pile = player.hand
+            river = self.river
+            for c in river:
+                card_pile.append(c)
+            print "Printing 7 cards"
+            print card_pile
+            player.p_hands = itertools.combinations(card_pile, 5)
+            print "Print all hands for player " + player.name
+            count = 0
+            for hand in player.p_hands:
+                print "hand #" + str(count)
+                for card in hand: print(card)
+                count += 1
+
+        return
 
 
     def getHighestCard(self):
@@ -122,7 +135,7 @@ class Poker:
         # Draw x hands, assign to all players of class Poker
         for player in self.players:
             hand = deck.drawHand(2)
-            self.players[x].hand = hand
+            player.hand = hand
 
 
         # Optionally reveal each hand (todo: combine with above)
@@ -142,6 +155,8 @@ class Poker:
             for hc in highest_cards:
                 print(hc)
 
+
+
         # Interactive dealer
         inp = raw_input('Dealer ready. Flop river? [yn]');
         if inp in ['y', 'Y']:
@@ -159,6 +174,11 @@ class Poker:
                 print "=========== Printing river ========== "
                 for card in self.river:
                     print(card)
+
+        # Optionally show all possible hands for players
+        inp = raw_input('Show all possible hands [yn]');
+        if inp in ['y', 'Y']:
+            self.getBestHand()
 
         # The game is now over. Show options
 
