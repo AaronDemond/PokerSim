@@ -1,7 +1,7 @@
 # PokerSim
-Start of a poker simulator. To be used for learning. 
+Start of a poker simulator. To be used for research. 
 
-Version 0.1 -- Should not be used as a serious reference yet.
+Version 0.25 -- Should not be used as a serious reference yet.
 
 <h2>Install & run</h2>
 	$ git clone https://github.com/AaronDemond/PokerSim

@@ -1,6 +1,7 @@
 import random
 import string
 import itertools
+from exceptions import ValueError
 
 class Card:
     def __init__(self, suit, rank): 
@@ -60,6 +61,7 @@ class Player:
 
 class Poker:
 
+
     def __init__(self, num_players, starting_stack):
         '''
             Setup a game, init must be called before other methods.
@@ -74,25 +76,89 @@ class Poker:
             self.players.append(player)
 
 
+    
+    @staticmethod
+    def _isFlush(hand):
+        suit = hand[0].suit
+        for card in hand:
+            if card.suit != suit:
+                return False
+        return True
+
     def getBestHand(self):
 
         curr_best = 11 #1 = Royal Flush - 10 = High card. 11 means nothing.
+
+        did_happen = 0
+        # loop through players, assign p_hands as a dict of all possible 5 card hands
         for player in self.players:
             card_pile = player.hand
             river = self.river
             for c in river:
                 card_pile.append(c)
-            print "Printing 7 cards"
-            print card_pile
             player.p_hands = itertools.combinations(card_pile, 5)
-            print "Print all hands for player " + player.name
-            count = 0
-            for hand in player.p_hands:
-                print "hand #" + str(count)
-                for card in hand: print(card)
-                count += 1
 
-        return
+            #check for each of 10 hands
+            for hand in player.p_hands:
+                if Poker._isFlush(hand):
+                    print "flush for " + player.name
+
+                ### following determins if a hand, or dict of cards, is a straight. ###
+
+                suits = []
+                ace_height = 0
+                for card in hand:
+                    suits.append(card.suit)
+                if 'A' in suits and 'K' in suits:
+                    ace_height = 1
+
+                values = []
+                for card in hand:
+                    cur_v = card.getValue() #always returns a dict
+                    if len(cur_v) > 1 and ace_height == 1: #if ace in hand, and ace high
+                        cur_v = 14 #set int current card int value to 14
+                    elif len(cur_v) > 1: # ace must otherwise be low (if present)
+                        cur_v = 1
+                    else:
+                        cur_v = cur_v[0] # ace not in hand, return first val in dict
+
+                    values.append(cur_v)
+
+
+                # following tests if the values dict forms a straight
+                sv = sorted(values)
+                s = True
+                for i in range(0,5):
+                    expected = i + sv[0]
+                    if expected != sv[i]:
+                        s = False
+
+
+                if s:
+                    print "============================================================"
+                    print "Straight for " + player.name  + "!!!!!!!!!!!!!!!!!!"
+                    did_happen = 1
+
+
+
+                
+                print "==============printing hand and its values========="
+                print player.name + "'s p-hand: "
+                for card in hand:
+                    print card
+                print player.name + "'s values: "
+                for v in values:
+                    print v
+
+                
+                '''
+                if _isRoyalFlush(hand):
+                    print "royal flush for " + player.name
+                if _isStraight(hand):
+                    print "striaght for " player.name
+                '''
+
+        return did_happen
 
 
     def getHighestCard(self):
@@ -158,15 +224,15 @@ class Poker:
 
 
         # Interactive dealer
-        inp = raw_input('Dealer ready. Flop river? [yn]');
-        if inp in ['y', 'Y']:
+        inp = raw_input('Dealer ready. Flop river? [y][Enter]');
+        if inp in ['y', 'Y', None, ""]:
             # Flop then flip no more then 2 additional cards
             for i in range(0,3):
                 if i==0:
                     self.river = deck.drawHand(3)
                 else:
-                    inp = raw_input('Show another card? [yn]')   # If the round ends, this loop breaks and it continues below.
-                    if inp in ['y', 'Y']:
+                    inp = raw_input('Show another card? [y][Enter]')   # If the round ends, this loop breaks and it continues below.
+                    if inp in ['y', 'Y', None, ""]:
                         self.river = self.river + deck.drawHand(1)
                     else:
                         print "Round over"
@@ -176,9 +242,12 @@ class Poker:
                     print(card)
 
         # Optionally show all possible hands for players
-        inp = raw_input('Show all possible hands [yn]');
-        if inp in ['y', 'Y']:
-            self.getBestHand()
+        inp = raw_input('Show all possible hands [y][Enter]');
+        if inp in ['y', 'Y', None, ""]:
+            did_happen = self.getBestHand()
+            if did_happen:
+                print "Straight occurred"
+            print "Straight not occurred"
 
         # The game is now over. Show options
 
@@ -197,6 +266,17 @@ class Poker:
 
 
 
-num_players = int(raw_input('How many players would you like to play? '));
-game = Poker(num_players,500)
-game.playSampleGame()
+while True: 
+    try:
+        num_players = int(raw_input('How many players would you like to play? '));
+        game = Poker(num_players,500)
+        game.playSampleGame()
+        break
+    except ValueError:
+        print "Enter an int"
+    
+
+
+
+
+
