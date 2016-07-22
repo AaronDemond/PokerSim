@@ -53,17 +53,12 @@ class Deck:
             self.cards.remove(card_drawn)
         return hand
 
-class Tests:
-    
-    def testTwoPair():
-        cards = [('4','D'), ('4', 'D'), ('8','S'), ('6','C'), ('J','D')]
-        player = Player('Aaron', 500)
-
 
 
 class Player:
     def __init__(self, name, starting_stack):
         self.name = name
+        self.removed_cards = []
         self.starting_stack = starting_stack
         self.score = 11
 
@@ -81,110 +76,117 @@ class Poker:
         for x in range(0,num_players):
             name = 'Player ' + string.uppercase[x]
             player = Player(name, starting_stack)
-            player.var1 = 'test!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
             self.players.append(player)
 
 
     
     @staticmethod
-    def _isFlush(p_hands):
-        for hand in p_hands:
-            suit = hand[0].suit
-            for card in hand:
-                if card.suit != suit:
-                    return False
+    def _isFlush(hand):
+        suit_count = 0
+        suit = hand[0].suit
+        for card in hand:
+            if card.suit == suit:
+                suit_count += 1
+        if suit_count >= 5:
             return True
 
     @staticmethod
-    def _isStraightFlush(p_hands):
-        if Poker._isFlush(p_hands) and Poker._isStraight(p_hands):
+    def _isStraightFlush(hand):
+        if Poker._isFlush(hand) and Poker._isStraight(hand):
             return True
 
     @staticmethod
-    def _isRoyalFlush(p_hands):
-        for hand in p_hands:
-            if Poker._isFlush(p_hands):
-                suits = [card.suit for card in p_hands[0]]
-                if 'A' in suits and 'K' in suits:
-                    return True
-
-    @staticmethod
-    def _isPair(p_hands):
-        for hand in p_hands:
-            for card in hand:
-                if hand.count(card) == 2:
-                    return True
-
-    @staticmethod
-    def _isTwoPair(p_hands):
-        for hand in p_hands:
-            for card in hand:
-                if hand.count(card) == 2:
-                    return True
-
-    @staticmethod
-    def _isThreeOfAKind(p_hands):
-        for hand in p_hands:
-            ranks = [card.rank for card in hand]
-            return bool([True for x in ranks if ranks.count(x) == 3])
-
-    @staticmethod
-    def _isFourOfAKind(p_hands):
-        for hand in p_hands:
-            ranks = [card.rank for card in hand]
-            return bool([True for x in ranks if ranks.count(x) == 4])
-
-    @staticmethod
-    def _isFullHouse(p_hands):
-        for hand in p_hands:
-            two = bool([True for x in hand if hand.count(x) == 2])
-            three = bool([True for x in hand if hand.count(x) == 3])
-            if two and three:
+    def _isRoyalFlush(hand):
+        if Poker._isFlush(hand):
+            suits = [card.suit for card in hand]
+            if set(['A','K','Q']) < set(suits):
                 return True
 
+    @staticmethod
+    def _isPair(hand):
+        for card in hand:
+            if hand.count(card) == 2:
+                return True
+
+    @staticmethod
+    def _isTwoPair(hand):
+        pairs = 0
+        for card in hand:
+            if hand.count(card) == 2:
+                pairs += 1
+        if pairs == 2:
+            return True
+
+    @staticmethod
+    def _isThreeOfAKind(hand):
+        ranks = [card.rank for card in hand]
+        for rank in ranks:
+            if ranks.count(rank) == 3:
+                return True
+
+    @staticmethod
+    def _isFourOfAKind(hand):
+        ranks = [card.rank for card in hand]
+        for rank in ranks:
+            if ranks.count(rank) == 4:
+                return True
+
+    @staticmethod
+    def _isFullHouse(hand):
+        doubles = False
+        triples = False
+        ranks = [card.rank for card in hand]
+        for rank in ranks:
+            if ranks.count(rank) == 2:
+                doubles = True
+            if ranks.count(rank) == 3:
+                triples = True
+        if doubles and triples:
+            return True
+
 
 
     @staticmethod
-    def _isStraight(p_hands):
+    def _isStraight(hand):
 
-        for hand in p_hands:
-            suits = []
-            ace_height = 0
-            for card in hand:
-                suits.append(card.suit)
-            if 'A' in suits and 'K' in suits:
-                ace_height = 1
+        # Determin if ace should be high or low.
+        suits = [card.suit for card in hand]
+        ace_height = 0
+        if set(['A','K','Q']) < set(suits):
+            ace_height = 1
 
-            values = []
-            for card in hand:
-                cur_v = card.getValue() #always returns a dict
-                if len(cur_v) > 1 and ace_height == 1: #if ace in hand, and ace high
-                    cur_v = 14 #set int current card int value to 14
-                elif len(cur_v) > 1: # ace must otherwise be low (if present)
-                    cur_v = 1
-                else:
-                    cur_v = cur_v[0] # ace not in hand, return first val in dict
+        # Get ranks, account for value of ace
+        values = []
+        for card in hand:
+            cur_v = card.getValue() #always returns a dict
+            if len(cur_v) > 1 and ace_height == 1: #if ace in hand, and ace high
+                cur_v = 14 #set int current card int value to 14
+            elif len(cur_v) > 1: # ace must otherwise be low (if present)
+                cur_v = 1
+            else:
+                cur_v = cur_v[0] # ace not in hand, return first val in dict
 
-                values.append(cur_v)
+            values.append(cur_v)
 
+        # Always expect next card to be one digit higher. 
+        # If we can get five hits, we have 5 cards in a row.
+        sorted_values = sorted(values)
+        straight = False
+        streak = 0
+        for i in range(7):
+            expected = i + sorted_values[0]
+            if expected == sorted_values[i]:
+                streak += 1
+            else:
+                streak = 0
+            if streak == 5:
+                straight = True
 
-            # following tests if the values dict forms a straight
-            sv = sorted(values)
-            s = True
-            for i in range(0,5):
-                expected = i + sv[0]
-                if expected != sv[i]:
-                    s = False
-
-            if s == True:
-                return True
-
-        return False
+        return straight
 
 
     @staticmethod
     def convertScoreToText(score):
-        print "GIVEN:::::: " + str(score)
         if score == 1:
             return 'Royal Flush'
 
@@ -227,38 +229,38 @@ class Poker:
             river = self.river
             for c in river:
                 card_pile.append(c)
-            player.p_hands = list(itertools.permutations(card_pile, 5))
+            player.p_hands = list(itertools.combinations(card_pile, 5))
             player.p_hands = [[card for card in hand] for hand in player.p_hands] 
             
 
 
             player.score = 11
 
-            if self._isPair(player.p_hands):
+            if self._isPair(card_pile):
                 player.score = 9
 
-            if self._isTwoPair(player.p_hands):
+            if self._isTwoPair(card_pile):
                 player.score = 8
 
-            if self._isThreeOfAKind(player.p_hands):
+            if self._isThreeOfAKind(card_pile):
                 player.score = 7
 
-            if self._isStraight(player.p_hands):
+            if self._isStraight(card_pile):
                 player.score = 6
 
-            if self._isFlush(player.p_hands):
+            if self._isFlush(card_pile):
                 player.score = 5
 
-            if self._isFullHouse(player.p_hands):
+            if self._isFullHouse(card_pile):
                 player.score = 4
 
-            if self._isFourOfAKind(player.p_hands):
+            if self._isFourOfAKind(card_pile):
                 player.score = 3
 
-            if self._isStraightFlush(player.p_hands):
+            if self._isStraightFlush(card_pile):
                 player.score = 2
 
-            if self._isRoyalFlush(player.p_hands):
+            if self._isRoyalFlush(card_pile):
                 player.score = 1
 
 
@@ -270,8 +272,8 @@ class Poker:
 
 
     @staticmethod
-    def highestCard(cards):
-
+    def highestCard(cards): 
+    #Returns highes cards from cards passed
         cur_max = None
         cur_max_cards = []
         for card in cards:
@@ -301,6 +303,40 @@ class Poker:
 
         return cur_max_cards
                     
+    def getHighCard(self):
+        '''
+            Finds the player with the highest card. If there is a tie
+            the card is discarded and we look for the next highest.
+        '''
+        cur_max = 0
+        cur_winners = []
+        for player in self.players:
+            for card in player.hand:
+                # getValue returns a dict, ace can have two ranks.
+                if len(card.getValue()) > 1:
+                    v = 14
+                else:
+                    v = card.getValue()[0]
+
+                if v == cur_max:
+                    cur_winners.append((player,card))
+                elif v > cur_max:
+                    cur_winners = [(player,card)]
+                    cur_max = v
+
+
+        if len(cur_winners) > 1:
+            for winner in cur_winners:
+                winner[0].hand.remove(winner[1])
+                winner[0].removed_cards.append(winner[1])
+            return self.getHighCard()
+
+        for player in self.players:
+            for card in player.removed_cards:
+                player.hand.append(card)
+
+        return cur_winners
+
 
 
     def printHands(self):
@@ -366,13 +402,22 @@ class Poker:
 
 
         highscore = self.getBestHand()
-        winner = None
-        for player in self.players:
-            if highscore == player.score:
-                winner = player
+
+        if highscore == 11:
+            winner_and_card = self.getHighCard()
+            winner = winner_and_card[0][0]
+            win_method = 'High card, ' + winner_and_card[0][1].__str__()
+        else:
+            for player in self.players:
+                if highscore == player.score:
+                    winner = player
+                    win_method = self.convertScoreToText(int(winner.score))
         print "Winner: " 
         print winner.name
-        print self.convertScoreToText(int(winner.score))
+        print win_method
+
+        print "Winners hand: "
+        print [card.__str__() for card in winner.hand]
 
 
         # The game is now over. Show options
