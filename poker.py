@@ -25,7 +25,6 @@ class Card:
             elif self.rank == 'Q': return [12]
             elif self.rank == 'K': return [13]
 
-        
 
 class Deck:
     def __init__(self):
@@ -54,10 +53,19 @@ class Deck:
             self.cards.remove(card_drawn)
         return hand
 
+class Tests:
+    
+    def testTwoPair():
+        cards = [('4','D'), ('4', 'D'), ('8','S'), ('6','C'), ('J','D')]
+        player = Player('Aaron', 500)
+
+
+
 class Player:
     def __init__(self, name, starting_stack):
         self.name = name
         self.starting_stack = starting_stack
+        self.score = 11
 
 class Poker:
 
@@ -73,93 +81,208 @@ class Poker:
         for x in range(0,num_players):
             name = 'Player ' + string.uppercase[x]
             player = Player(name, starting_stack)
+            player.var1 = 'test!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
             self.players.append(player)
 
 
     
     @staticmethod
-    def _isFlush(hand):
-        suit = hand[0].suit
-        for card in hand:
-            if card.suit != suit:
-                return False
-        return True
+    def _isFlush(p_hands):
+        for hand in p_hands:
+            suit = hand[0].suit
+            for card in hand:
+                if card.suit != suit:
+                    return False
+            return True
+
+    @staticmethod
+    def _isStraightFlush(p_hands):
+        if Poker._isFlush(p_hands) and Poker._isStraight(p_hands):
+            return True
+
+    @staticmethod
+    def _isRoyalFlush(p_hands):
+        for hand in p_hands:
+            if Poker._isFlush(p_hands):
+                suits = [card.suit for card in p_hands[0]]
+                if 'A' in suits and 'K' in suits:
+                    return True
+
+    @staticmethod
+    def _isPair(p_hands):
+        for hand in p_hands:
+            for card in hand:
+                if hand.count(card) == 2:
+                    return True
+
+    @staticmethod
+    def _isTwoPair(p_hands):
+        for hand in p_hands:
+            for card in hand:
+                if hand.count(card) == 2:
+                    return True
+
+    @staticmethod
+    def _isThreeOfAKind(p_hands):
+        for hand in p_hands:
+            ranks = [card.rank for card in hand]
+            return bool([True for x in ranks if ranks.count(x) == 3])
+
+    @staticmethod
+    def _isFourOfAKind(p_hands):
+        for hand in p_hands:
+            ranks = [card.rank for card in hand]
+            return bool([True for x in ranks if ranks.count(x) == 4])
+
+    @staticmethod
+    def _isFullHouse(p_hands):
+        for hand in p_hands:
+            two = bool([True for x in hand if hand.count(x) == 2])
+            three = bool([True for x in hand if hand.count(x) == 3])
+            if two and three:
+                return True
+
+
+
+    @staticmethod
+    def _isStraight(p_hands):
+
+        for hand in p_hands:
+            suits = []
+            ace_height = 0
+            for card in hand:
+                suits.append(card.suit)
+            if 'A' in suits and 'K' in suits:
+                ace_height = 1
+
+            values = []
+            for card in hand:
+                cur_v = card.getValue() #always returns a dict
+                if len(cur_v) > 1 and ace_height == 1: #if ace in hand, and ace high
+                    cur_v = 14 #set int current card int value to 14
+                elif len(cur_v) > 1: # ace must otherwise be low (if present)
+                    cur_v = 1
+                else:
+                    cur_v = cur_v[0] # ace not in hand, return first val in dict
+
+                values.append(cur_v)
+
+
+            # following tests if the values dict forms a straight
+            sv = sorted(values)
+            s = True
+            for i in range(0,5):
+                expected = i + sv[0]
+                if expected != sv[i]:
+                    s = False
+
+            if s == True:
+                return True
+
+        return False
+
+
+    @staticmethod
+    def convertScoreToText(score):
+        print "GIVEN:::::: " + str(score)
+        if score == 1:
+            return 'Royal Flush'
+
+        if score == 2:
+            return 'Straight Flush'
+
+        if score == 3:
+            return 'Four of a Kind'
+
+        if score == 4:
+            return 'Full House'
+
+        if score == 5:
+            return 'Flush'
+
+        if score == 6:
+            return 'Straight'
+        
+        if score == 7:
+            return 'Three of a Kind'
+
+        if score == 8:
+            return 'Two Pair'
+
+        if score == 9:
+            return 'One Pair'
+
+        if score == 10:
+            return 'High Card'
+
+
 
     def getBestHand(self):
 
         curr_best = 11 #1 = Royal Flush - 10 = High card. 11 means nothing.
 
-        did_happen = 0
         # loop through players, assign p_hands as a dict of all possible 5 card hands
         for player in self.players:
             card_pile = player.hand
             river = self.river
             for c in river:
                 card_pile.append(c)
-            player.p_hands = itertools.combinations(card_pile, 5)
-
-            #check for each of 10 hands
-            for hand in player.p_hands:
-                if Poker._isFlush(hand):
-                    print "flush for " + player.name
-
-                ### following determins if a hand, or dict of cards, is a straight. ###
-
-                suits = []
-                ace_height = 0
-                for card in hand:
-                    suits.append(card.suit)
-                if 'A' in suits and 'K' in suits:
-                    ace_height = 1
-
-                values = []
-                for card in hand:
-                    cur_v = card.getValue() #always returns a dict
-                    if len(cur_v) > 1 and ace_height == 1: #if ace in hand, and ace high
-                        cur_v = 14 #set int current card int value to 14
-                    elif len(cur_v) > 1: # ace must otherwise be low (if present)
-                        cur_v = 1
-                    else:
-                        cur_v = cur_v[0] # ace not in hand, return first val in dict
-
-                    values.append(cur_v)
+            player.p_hands = list(itertools.permutations(card_pile, 5))
+            player.p_hands = [[card for card in hand] for hand in player.p_hands] 
+            
 
 
-                # following tests if the values dict forms a straight
-                sv = sorted(values)
-                s = True
-                for i in range(0,5):
-                    expected = i + sv[0]
-                    if expected != sv[i]:
-                        s = False
+            player.score = 11
+
+            if self._isPair(player.p_hands):
+                player.score = 9
+
+            if self._isTwoPair(player.p_hands):
+                player.score = 8
+
+            if self._isThreeOfAKind(player.p_hands):
+                player.score = 7
+
+            if self._isStraight(player.p_hands):
+                player.score = 6
+
+            if self._isFlush(player.p_hands):
+                player.score = 5
+
+            if self._isFullHouse(player.p_hands):
+                player.score = 4
+
+            if self._isFourOfAKind(player.p_hands):
+                player.score = 3
+
+            if self._isStraightFlush(player.p_hands):
+                player.score = 2
+
+            if self._isRoyalFlush(player.p_hands):
+                player.score = 1
 
 
-                if s:
-                    print "============================================================"
-                    print "Straight for " + player.name  + "!!!!!!!!!!!!!!!!!!"
-                    did_happen = 1
+            player.high_card = self.highestCard(card_pile)
+
+        return min([player.score for player in self.players])
 
 
 
-                
-                print "==============printing hand and its values========="
-                print player.name + "'s p-hand: "
-                for card in hand:
-                    print card
-                print player.name + "'s values: "
-                for v in values:
-                    print v
 
-                
-                '''
-                if _isRoyalFlush(hand):
-                    print "royal flush for " + player.name
-                if _isStraight(hand):
-                    print "striaght for " player.name
-                '''
+    @staticmethod
+    def highestCard(cards):
 
-        return did_happen
+        cur_max = None
+        cur_max_cards = []
+        for card in cards:
+            for v in card.getValue(): #Cards can have multiple values (Only ace, but it is coded to always return a dict)
+                if v == cur_max:
+                    cur_max_cards.append(card)
+                elif v > cur_max:
+                    cur_max = v
+                    cur_max_cards = [card]
 
+        return cur_max_cards[0]
 
     def getHighestCard(self):
         '''
@@ -241,13 +364,16 @@ class Poker:
                 for card in self.river:
                     print(card)
 
-        # Optionally show all possible hands for players
-        inp = raw_input('Show all possible hands [y][Enter]');
-        if inp in ['y', 'Y', None, ""]:
-            did_happen = self.getBestHand()
-            if did_happen:
-                print "Straight occurred"
-            print "Straight not occurred"
+
+        highscore = self.getBestHand()
+        winner = None
+        for player in self.players:
+            if highscore == player.score:
+                winner = player
+        print "Winner: " 
+        print winner.name
+        print self.convertScoreToText(int(winner.score))
+
 
         # The game is now over. Show options
 
