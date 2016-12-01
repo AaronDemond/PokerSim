@@ -1,16 +1,21 @@
 # PokerSim
-Start of a poker simulator. To be used for research. 
 
-Version 0.4 -- Should not be used as a serious reference yet.
+This script interactively evaluates a randomly seeded game of poker.
+The goal is to provide a simple UI for gathering statistics on pre chosen game scenarios.
+
+
+
+Version 0.4 -- Should not be used as a serious reference yet (few configuration options)
 
 <h2>Install & run</h2>
+
+To walk through a typical game of poker, run the following:
+
 	$ git clone https://github.com/AaronDemond/PokerSim
 	$ python PokerSim/poker.py
 
-<h3>Example Useage</h3>
-	import poker.py
-	my_game = Poker(5,500) # Start a 5 person game, at $500 ea
-	my_game.playSimpleGame()
+
+
 
 
 	
