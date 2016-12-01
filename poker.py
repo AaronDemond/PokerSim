@@ -40,6 +40,7 @@ class Deck:
                 cards.append(Card(s,r))
         self.cards = cards
 
+
     def drawHand(self, ammount):
         '''
             Returns a list (hand) of two cards and updates deck
@@ -104,16 +105,19 @@ class Poker:
 
     @staticmethod
     def _isPair(hand):
-        for card in hand:
-            if hand.count(card) == 2:
+        ranks = [card.rank for card in hand]
+        for rank in ranks:
+            if ranks.count(rank) == 2:
                 return True
 
     @staticmethod
     def _isTwoPair(hand):
         pairs = 0
-        for card in hand:
-            if hand.count(card) == 2:
+        ranks = [card.rank for card in hand]
+        for rank in set(ranks):
+            if ranks.count(rank) == 2:
                 pairs += 1
+
         if pairs == 2:
             return True
 
@@ -130,6 +134,7 @@ class Poker:
         for rank in ranks:
             if ranks.count(rank) == 4:
                 return True
+
 
     @staticmethod
     def _isFullHouse(hand):
@@ -173,13 +178,14 @@ class Poker:
         sorted_values = sorted(values)
         straight = False
         streak = 0
-        for i in range(7):
-            expected = i + sorted_values[0]
-            if expected == sorted_values[i]:
+        for i in range(6):
+            expected = sorted_values[i] + 1
+            if sorted_values[i+1] == expected:
                 streak += 1
             else:
                 streak = 0
-            if streak == 5:
+
+            if streak == 4:
                 straight = True
 
         return straight
@@ -266,6 +272,14 @@ class Poker:
 
             player.high_card = self.highestCard(card_pile)
 
+        all_scores = [player.score for player in self.players]
+        low_score = min(all_scores)
+        if all_scores.count(low_score) > 1:
+            tied_players = [player for player in self.players if player.score == low_score]
+            print "TODO: TIEBREAKER"
+            print "Tied players:"
+            for p in tied_players:
+                print p.name
         return min([player.score for player in self.players])
 
 
@@ -361,6 +375,8 @@ class Poker:
         for player in self.players:
             hand = deck.drawHand(2)
             player.hand = hand
+
+
 
 
         # Optionally reveal each hand (todo: combine with above)
