@@ -242,32 +242,32 @@ class Poker:
 
             player.score = 11
 
-            if self._isPair(card_pile):
-                player.score = 9
-
-            if self._isTwoPair(card_pile):
-                player.score = 8
-
-            if self._isThreeOfAKind(card_pile):
-                player.score = 7
-
-            if self._isStraight(card_pile):
-                player.score = 6
-
-            if self._isFlush(card_pile):
-                player.score = 5
-
-            if self._isFullHouse(card_pile):
-                player.score = 4
-
-            if self._isFourOfAKind(card_pile):
-                player.score = 3
-
-            if self._isStraightFlush(card_pile):
-                player.score = 2
-
             if self._isRoyalFlush(card_pile):
                 player.score = 1
+
+            elif self._isStraightFlush(card_pile):
+                player.score = 2
+
+            elif self._isFourOfAKind(card_pile):
+                player.score = 3
+
+            elif self._isFullHouse(card_pile):
+                player.score = 4
+
+            elif self._isFlush(card_pile):
+                player.score = 5
+
+            elif self._isStraight(card_pile):
+                player.score = 6
+
+            elif self._isThreeOfAKind(card_pile):
+                player.score = 7
+
+            elif self._isTwoPair(card_pile):
+                player.score = 8
+
+            elif self._isPair(card_pile):
+                player.score = 9
 
 
             player.high_card = self.highestCard(card_pile)
