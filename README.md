@@ -1,11 +1,11 @@
 # PokerSim
 
-This script interactively evaluates a randomly seeded game of poker.
+This script interactively simulates a randomly seeded game of poker.
 The goal is to provide a simple UI for gathering statistics on pre chosen game scenarios.
 
 
 
-Version 0.4 -- Should not be used as a serious reference yet (few configuration options)
+Version 0.401 -- Should not be used as a serious reference yet (few configuration options)
 
 <h2>Install & run</h2>
 
